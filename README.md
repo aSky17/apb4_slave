@@ -45,69 +45,7 @@ DUT:
 APB4 Slave Peripheral Interface
 ```
 
----
-
-# 3. RTL Directory Structure
-
-```text
-rtl/
-├── apb4_slave.sv
-├── apb4_fsm.sv
-├── apb4_regbank.sv
-├── apb4_decoder.sv
-├── apb4_pready_gen.sv
-├── apb4_error_logic.sv
-├── apb4_pkg.sv
-└── top.sv
-```
-
----
-
-# 4. UVM Directory Structure
-
-```text
-tb/
-├── interface/
-│   └── apb_if.sv
-│
-├── agent/
-│   ├── apb_driver.sv
-│   ├── apb_monitor.sv
-│   ├── apb_sequencer.sv
-│   ├── apb_agent.sv
-│   └── apb_seq_item.sv
-│
-├── sequences/
-│   ├── apb_base_seq.sv
-│   ├── apb_write_seq.sv
-│   ├── apb_read_seq.sv
-│   ├── apb_random_seq.sv
-│   └── apb_error_seq.sv
-│
-├── scoreboard/
-│   └── apb_scoreboard.sv
-│
-├── coverage/
-│   └── apb_coverage.sv
-│
-├── assertions/
-│   └── apb_assertions.sv
-│
-├── env/
-│   └── apb_env.sv
-│
-├── tests/
-│   ├── apb_base_test.sv
-│   ├── apb_smoke_test.sv
-│   ├── apb_random_test.sv
-│   └── apb_reset_test.sv
-│
-└── top_tb.sv
-```
-
----
-
-# 5. APB FSM
+# 3. APB FSM
 
 ```text
 IDLE
@@ -127,7 +65,7 @@ ACCESS
 
 ---
 
-# 6. Mandatory RTL Features
+# 4. Mandatory RTL Features
 
 - Read transfers
 - Write transfers
@@ -143,7 +81,7 @@ ACCESS
 
 ---
 
-# 7. APB Protocol Rules
+# 5. APB Protocol Rules
 
 ## Rule 1
 SETUP phase lasts exactly one cycle.
@@ -180,7 +118,7 @@ PSTRB must be 0 during READ transfers.
 
 ---
 
-# 8. RTL Corner Cases
+# 6. RTL Corner Cases
 
 ## Transfer Cases
 - single write
@@ -221,7 +159,7 @@ PSTRB must be 0 during READ transfers.
 
 ---
 
-# 9. Assertions
+# 7. Assertions
 
 ## PENABLE Requires PSEL
 
@@ -252,7 +190,7 @@ PSLVERR |-> (PSEL && PENABLE && PREADY);
 
 ---
 
-# 10. UVM Responsibilities
+# 8. UVM Responsibilities
 
 ## Driver
 Acts as APB master.
@@ -291,7 +229,7 @@ PSEL && PENABLE && PREADY
 
 ---
 
-# 11. Directed Test Plan
+# 9. Directed Test Plan
 
 ## Basic Tests
 - write test
@@ -333,7 +271,7 @@ PSEL && PENABLE && PREADY
 
 ---
 
-# 12. Coverage Goals
+# 10. Coverage Goals
 
 ## Functional Coverage
 ```text
@@ -348,41 +286,4 @@ Toggle    >90%
 FSM       100%
 ```
 
----
 
-# 13. Debug Signals
-
-Always monitor:
-- PSEL
-- PENABLE
-- PREADY
-- PWRITE
-- PADDR
-- PWDATA
-- PRDATA
-- PSTRB
-- PSLVERR
-- FSM state
-
----
-
-# 14. Final Understanding
-
-This project implements:
-
-```text
-UVM Driver (Behavioral APB Master)
-            |
-            v
-      APB4 Slave DUT
-```
-
-The DUT represents:
-```text
-Peripheral APB Interface Layer
-```
-
-similar to:
-- UART APB interface
-- GPIO APB interface
-- TIMER APB interface
