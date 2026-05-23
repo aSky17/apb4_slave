@@ -16,6 +16,8 @@ module apb4_slave #(
 );
 
     import apb4_pkg::*;
+
+    parameter int WAIT_CYCLES = 2;
     
     //fsm
     apb_state_t state, next_state;
@@ -26,6 +28,9 @@ module apb4_slave #(
     logic [31:0] txdata_reg;
     logic [31:0] rxdata_reg;
     logic [31:0] config_reg;
+
+    //wait counter
+    logic [$clog2(WAIT_CYCLES+1)-1:0] wait_count;
 
     always_ff @(posedge PCLK or negedge PRESETn) begin
         if (!PRESETn) begin
@@ -51,8 +56,14 @@ module apb4_slave #(
             end
 
             ACCESS: begin
-                if (PSEL && PENABLE) begin
-                    next_state = IDLE;
+                if (PREADY) begin
+                    if (PSEL && !PENABLE) begin
+                        next_state = SETUP;
+                    end else begin
+                        next_state = IDLE;
+                    end
+                end else begin
+                    next_state = ACCESS;
                 end
             end
 
@@ -61,6 +72,29 @@ module apb4_slave #(
             end
         endcase
     end
+
+    //wait counter logic
+    always_ff @(posedge PCLK or negedge PRESETn) begin
+        if (!PRESETn) begin
+            wait_count <= 0;
+        end else begin
+            if (state == SETUP) begin
+                wait_count <= WAIT_CYCLES;
+            end else if (state == ACCESS && wait_count != 0) begin
+                wait_count <= wait_count - 1'b1;
+            end
+        end
+    end
+
+    //PREADY generation
+    always_comb begin
+        if (state == ACCESS && wait_count == 0) begin
+            PREADY = 1'b1;
+        end else begin
+            PREADY = 1'b0;
+        end
+    end
+
 
     //write logic 
     always_ff @(posedge PCLK or negedge PRESETn) begin
@@ -71,7 +105,7 @@ module apb4_slave #(
             rxdata_reg <= 32'h0;
             config_reg <= 32'h0;
         end else begin
-            if (PSEL && PENABLE && PWRITE) begin
+            if (PSEL && PENABLE && PWRITE && PREADY) begin
                 case(PADDR) 
                     CTRL_ADDR: begin
                         ctrl_reg <= PWDATA;
@@ -96,7 +130,7 @@ module apb4_slave #(
     always_comb begin
         PRDATA = 32'h00;
 
-        if (PSEL && PENABLE && !PWRITE) begin
+        if (PSEL && PENABLE && !PWRITE && PREADY) begin
             case (PADDR) 
                 CTRL_ADDR: begin
                     PRDATA = ctrl_reg;
@@ -125,8 +159,6 @@ module apb4_slave #(
         end
     end
 
-    //didnt handle wait logic and error in phase 1, sp
-    assign PREADY = 1'b1;
     assign PSLVERR = 1'b0;
 
 
