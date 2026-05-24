@@ -15,7 +15,7 @@ module apb4_slave #(
     input logic PENABLE,
     input logic PWRITE,
     input logic [DATA_WIDTH-1:0] PWDATA,
-    input logic [3:0] PSTRB,
+    input logic [STRB_WIDTH-1:0] PSTRB;,
     input logic [2:0] PPROT,
 
     output logic [DATA_WIDTH-1:0] PRDATA,
@@ -46,6 +46,15 @@ module apb4_slave #(
     //protection policy
     logic prot_error;
 
+    //helper wires
+    logic setup_phase;
+    logic access_phase;
+    logic transfer_done;
+
+    assign setup_phase   = PSEL && !PENABLE;
+    assign access_phase  = PSEL && PENABLE;
+    ssign transfer_done = PSEL && PENABLE && PREADY;
+
     always_ff @(posedge PCLK or negedge PRESETn) begin
         if (!PRESETn) begin
             state <= IDLE;
@@ -60,7 +69,7 @@ module apb4_slave #(
         case(state)
 
             IDLE: begin
-                if (PSEL && !PENABLE) begin
+                if (setup_phase) begin
                     next_state = SETUP;
                 end
             end
@@ -71,7 +80,7 @@ module apb4_slave #(
 
             ACCESS: begin
                 if (PREADY) begin
-                    if (PSEL && !PENABLE) begin
+                    if (setup_phase) begin
                         next_state = SETUP;
                     end else begin
                         next_state = IDLE;
@@ -109,6 +118,37 @@ module apb4_slave #(
         end
     end
 
+    //address valid logic 
+    function automatic logic is_valid_addr
+    (
+        input logic [ADDR_WIDTH-1:0] addr
+    );
+        case(addr)
+            CTRL_ADDR,
+            STATUS_ADDR,
+            TXDATA_ADDR,
+            RXDATA_ADDR,
+            CONFIG_ADDR:
+                is_valid_addr = 1'b1;
+            default:
+                is_valid_addr = 1'b0;
+        endcase
+    endfunction
+
+    //byte write logic 
+    task automatic apply_pstrb_write
+    (
+        inout logic [DATA_WIDTH-1:0] reg_data,
+        input logic [DATA_WIDTH-1:0] write_data,
+        input logic [STRB_WIDTH-1:0] strb
+    );
+        for (int i = 0; i < STRB_WIDTH; i++) begin
+
+            if (strb[i]) begin
+                reg_data[i*8 +: 8] = write_data[i*8 +: 8];
+            end
+        end
+    endtask
 
     //write logic 
     always_ff @(posedge PCLK or negedge PRESETn) begin
@@ -119,51 +159,18 @@ module apb4_slave #(
             rxdata_reg <= 32'h0;
             config_reg <= 32'h0;
         end else begin
-            if (PSEL && PENABLE && PWRITE && PREADY && !PSLVERR && !prot_error) begin
+            if (access_phase && PWRITE && PREADY && !PSLVERR && !prot_error) begin
                 case(PADDR) 
                     CTRL_ADDR: begin
-                        if (PSTRB[0]) begin
-                            ctrl_reg[7:0] <= PWDATA[7:0];
-                        end
-                        if (PSTRB[1]) begin
-                            ctrl_reg[15:8] <= PWDATA[15:8];
-                        end
-                        if (PSTRB[2]) begin
-                            ctrl_reg[23:16] <= PWDATA[23:16];
-                        end
-                        if (PSTRB[3]) begin
-                            ctrl_reg[31:24] <= PWDATA[31:24];
-                        end
+                        apply_pstrb_write(ctrl_reg, PWDATA, PSTRB);
                     end
 
                     TXDATA_ADDR: begin
-                        if (PSTRB[0]) begin
-                            txdata_reg[7:0] <= PWDATA[7:0];
-                        end
-                        if (PSTRB[1]) begin
-                            txdata_reg[15:8] <= PWDATA[15:8];
-                        end
-                        if (PSTRB[2]) begin
-                            txdata_reg[23:16] <= PWDATA[23:16];
-                        end
-                        if (PSTRB[3]) begin
-                            txdata_reg[31:24] <= PWDATA[31:24];
-                        end
+                        apply_pstrb_write(txdata_reg, PWDATA, PSTRB);
                     end
 
                     CONFIG_ADDR: begin
-                        if (PSTRB[0]) begin
-                            config_reg[7:0] <= PWDATA[7:0];
-                        end
-                        if (PSTRB[1]) begin
-                            config_reg[15:8] <= PWDATA[15:8];
-                        end
-                        if (PSTRB[2]) begin
-                            config_reg[23:16] <= PWDATA[23:16];
-                        end
-                        if (PSTRB[3]) begin
-                            config_reg[31:24] <= PWDATA[31:24];
-                        end
+                        apply_pstrb_write(config_reg, PWDATA, PSTRB);
                     end
 
                     default: begin
@@ -198,21 +205,11 @@ module apb4_slave #(
         pslverr_next = 1'b0;
 
         //error is valid only during transfer completion
-        if (PSEL && PENABLE && PREADY) begin
+        if (transfer_done) begin
             
             //invalid address
-            case (PADDR) 
-                CTRL_ADDR,
-                STATUS_ADDR,
-                TXDATA_ADDR,
-                CONFIG_ADDR,
-                RXDATA_ADDR: begin
-                    pslverr_next = 1'b0;
-                end
-                default: begin
-                    pslverr_next = 1'b1;
-                end
-            endcase
+            if (!is_valid_addr(PADDR))
+                pslverr_next = 1'b1;
 
             //write to RO(READ ONLY) registers
             if (PWRITE) begin
@@ -232,7 +229,7 @@ module apb4_slave #(
     always_comb begin
         PRDATA = 32'h00;
 
-        if (PSEL && PENABLE && !PWRITE && PREADY) begin
+        if (access_phase && !PWRITE && PREADY) begin
             case (PADDR) 
                 CTRL_ADDR: begin
                     PRDATA = ctrl_reg;

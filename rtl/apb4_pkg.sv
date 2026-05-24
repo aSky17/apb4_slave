@@ -14,5 +14,6 @@ package apb4_pkg;
     localparam logic [ADDR_WIDTH-1:0] TXDATA_ADDR = 32'h0000_0008;
     localparam logic [ADDR_WIDTH-1:0] RXDATA_ADDR = 32'h0000_000C;
     localparam logic [ADDR_WIDTH-1:0] CONFIG_ADDR = 32'h0000_0010;
+    localparam int STRB_WIDTH = DATA_WIDTH/8;
 
 endpackage

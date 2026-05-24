@@ -1,6 +1,4 @@
-# APB4 RTL + UVM Industry-Style Development & Verification Guide
-
----
+# APB4 RTL + UVM
 
 # 1. Introduction
 
@@ -11,91 +9,44 @@ The objective is to:
 - Design a protocol-correct APB4 RTL slave
 - Handle all legal APB4 protocol scenarios
 - Handle protocol corner cases
-- Implement robust error handling
 - Support wait states
 - Support byte strobes
 - Support protection logic
 - Build a reusable industry-style UVM environment
 - Achieve protocol, functional, and code coverage closure
 - Enable assertion-based verification
-- Prepare for subsystem-level integration
 
 ---
 
-# 2. Project Scope
+# 3. RTL Features
 
-This project focuses ONLY on:
-
-```text
-APB4 Slave RTL + UVM Verification Environment
-```
-
-NOT:
-- APB interconnect
-- AXI/APB bridge
-- Synthesizable APB master
-
-UVM Driver acts as:
-```text
-Behavioral APB Master
-```
-
-DUT:
-```text
-APB4 Slave Peripheral Interface
-```
-
-# 3. APB FSM
-
-```text
-IDLE
-  |
-  v
-SETUP
-  |
-  v
-ACCESS
-  |
-  +----> ACCESS (wait states)
-  |
-  +----> IDLE
-  |
-  +----> SETUP (back-to-back transfer)
-```
+- FSM
+- wait states
+- PREADY
+- PSTRB
+- PSLVERR
+- PPROT
+- protected registers
+- assertions
+- parameterization
+- reusable write helpers
 
 ---
 
-# 4. Mandatory RTL Features
+# 4. APB Protocol Rules
 
-- Read transfers
-- Write transfers
-- Wait-state support
-- PREADY generation
-- PSLVERR generation
-- PSTRB support
-- PPROT support
-- Register bank
-- Address decoder
-- Reset handling
-- Back-to-back transfers
-
----
-
-# 5. APB Protocol Rules
-
-## Rule 1
+RULE 1: 
 SETUP phase lasts exactly one cycle.
 
-## Rule 2
+RULE 2: 
 ACCESS phase starts only after SETUP.
 
-## Rule 3
+Rule 3:
 PENABLE asserted only during ACCESS.
 
-## Rule 4
+Rule 4:
 Signals remain stable during wait states.
-
-Stable signals:
+Stable signals are:
 - PADDR
 - PWRITE
 - PWDATA
@@ -103,91 +54,107 @@ Stable signals:
 - PPROT
 - PSEL
 
-## Rule 5
+Rule 5:
 Transfer completes only when:
 
 ```text
 PSEL && PENABLE && PREADY
 ```
 
-## Rule 6
+Rule 6:
 PSLVERR valid only during completion cycle.
 
-## Rule 7
+Rule 7:
 PSTRB must be 0 during READ transfers.
 
----
-
-# 6. RTL Corner Cases
-
-## Transfer Cases
-- single write
-- single read
-- read-after-write
-- write-after-read
-- back-to-back transfers
-
-## Wait-State Cases
-- zero wait
-- single wait
-- multiple waits
-- random waits
-
-## Reset Cases
-- reset in IDLE
-- reset in SETUP
-- reset in ACCESS
-- reset during wait
-
-## PSTRB Cases
-- byte writes
-- halfword writes
-- sparse writes
-- full-word writes
-
-## PPROT Cases
-- secure access
-- non-secure access
-- privileged access
-- instruction access
-
-## Error Cases
-- invalid address
-- RO register write
-- illegal protection access
-- illegal PSTRB
 
 ---
 
 # 7. Assertions
 
+The APB4 slave includes SystemVerilog Assertions (SVA) to validate protocol correctness, FSM behavior, timing compliance, and error handling during simulation.
+
+Assertions help detect protocol violations automatically and improve debug efficiency in verification environments.
+
+---
+
 ## PENABLE Requires PSEL
 
-```systemverilog
-PENABLE |-> PSEL;
-```
+Ensures that the ACCESS phase signal `PENABLE` is never asserted unless the slave is selected using `PSEL`.
 
-## SETUP To ACCESS
+This validates correct APB phase sequencing and prevents illegal ACCESS cycles.
 
-```systemverilog
-(PSEL && !PENABLE)
-|=> PENABLE;
-```
+---
 
-## Stable During Wait
+## SETUP To ACCESS Transition
 
-```systemverilog
-(PSEL && PENABLE && !PREADY)
-|->
-$stable(PADDR);
-```
+Checks that every valid SETUP phase transitions into ACCESS phase on the following clock cycle.
+
+This verifies proper APB transaction progression.
+
+---
+
+## Stable Signals During Wait States
+
+Ensures that address, control, protection, and write-data signals remain stable while the slave inserts wait states (`PREADY = 0`).
+
+This validates APB protocol compliance during stalled transfers.
+
+---
 
 ## PSLVERR Validity
 
-```systemverilog
-PSLVERR |-> (PSEL && PENABLE && PREADY);
-```
+Verifies that `PSLVERR` is asserted only during a valid transfer completion cycle.
 
+This prevents illegal or asynchronous error signaling.
+
+---
+
+## ACCESS State Requires PENABLE
+
+Checks that whenever the internal FSM enters ACCESS state, the protocol signal `PENABLE` is asserted.
+
+This validates consistency between FSM state and external APB signaling.
+
+---
+
+## SETUP State Requires PENABLE Low
+
+Ensures that `PENABLE` remains low during SETUP phase.
+
+This validates correct APB timing behavior before entering ACCESS phase.
+
+---
+
+## PSTRB Validity During Reads
+
+Checks that byte strobes (`PSTRB`) remain zero during read transfers.
+
+Since byte strobes are only meaningful for writes, this validates correct APB4 usage.
+
+---
+
+## Transfer Completion Exit Check
+
+Ensures that after a successful transfer completion, the FSM exits ACCESS state and transitions either to IDLE or the next SETUP phase.
+
+This validates correct transfer termination behavior.
+
+---
+
+## PREADY Only During ACCESS
+
+Checks that `PREADY` is asserted only while the slave is in ACCESS phase.
+
+This prevents illegal ready signaling outside valid transfer windows.
+
+---
+
+## Illegal Write To Read-Only Registers
+
+Verifies that writes to read-only registers generate `PSLVERR`.
+
+This validates register access protection and error response handling.
 ---
 
 # 8. UVM Responsibilities
