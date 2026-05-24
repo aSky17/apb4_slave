@@ -8,6 +8,8 @@ module top;
     logic         PENABLE;
     logic         PWRITE;
     logic [31:0]  PWDATA;
+    logic [3:0]   PSTRB;
+    logic [2:0]   PPROT;
 
     logic [31:0]  PRDATA;
     logic         PREADY;
@@ -23,6 +25,8 @@ module top;
         .PENABLE   (PENABLE),
         .PWRITE    (PWRITE),
         .PWDATA    (PWDATA),
+        .PSTRB     (PSTRB),
+        .PPROT     (PPROT),
 
         .PRDATA    (PRDATA),
         .PREADY    (PREADY),

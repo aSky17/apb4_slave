@@ -1,3 +1,9 @@
+/*
+* PPROT[0]: 1 = privileged, 0 = user
+* PPROT[1]: 1 = non-secure, 0 = secure
+* PPROT[2]: 1 = instruction access, 0 = data access
+*/
+
 module apb4_slave #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
@@ -9,6 +15,8 @@ module apb4_slave #(
     input logic PENABLE,
     input logic PWRITE,
     input logic [DATA_WIDTH-1:0] PWDATA,
+    input logic [3:0] PSTRB,
+    input logic [2:0] PPROT,
 
     output logic [DATA_WIDTH-1:0] PRDATA,
     output logic PREADY,
@@ -31,6 +39,12 @@ module apb4_slave #(
 
     //wait counter
     logic [$clog2(WAIT_CYCLES+1)-1:0] wait_count;
+
+    //internal error signal
+    logic pslverr_next;
+
+    //protection policy
+    logic prot_error;
 
     always_ff @(posedge PCLK or negedge PRESETn) begin
         if (!PRESETn) begin
@@ -105,23 +119,111 @@ module apb4_slave #(
             rxdata_reg <= 32'h0;
             config_reg <= 32'h0;
         end else begin
-            if (PSEL && PENABLE && PWRITE && PREADY) begin
+            if (PSEL && PENABLE && PWRITE && PREADY && !PSLVERR && !prot_error) begin
                 case(PADDR) 
                     CTRL_ADDR: begin
-                        ctrl_reg <= PWDATA;
+                        if (PSTRB[0]) begin
+                            ctrl_reg[7:0] <= PWDATA[7:0];
+                        end
+                        if (PSTRB[1]) begin
+                            ctrl_reg[15:8] <= PWDATA[15:8];
+                        end
+                        if (PSTRB[2]) begin
+                            ctrl_reg[23:16] <= PWDATA[23:16];
+                        end
+                        if (PSTRB[3]) begin
+                            ctrl_reg[31:24] <= PWDATA[31:24];
+                        end
                     end
 
                     TXDATA_ADDR: begin
-                        txdata_reg <= PWDATA;
+                        if (PSTRB[0]) begin
+                            txdata_reg[7:0] <= PWDATA[7:0];
+                        end
+                        if (PSTRB[1]) begin
+                            txdata_reg[15:8] <= PWDATA[15:8];
+                        end
+                        if (PSTRB[2]) begin
+                            txdata_reg[23:16] <= PWDATA[23:16];
+                        end
+                        if (PSTRB[3]) begin
+                            txdata_reg[31:24] <= PWDATA[31:24];
+                        end
                     end
 
                     CONFIG_ADDR: begin
-                        config_reg <= PWDATA;
+                        if (PSTRB[0]) begin
+                            config_reg[7:0] <= PWDATA[7:0];
+                        end
+                        if (PSTRB[1]) begin
+                            config_reg[15:8] <= PWDATA[15:8];
+                        end
+                        if (PSTRB[2]) begin
+                            config_reg[23:16] <= PWDATA[23:16];
+                        end
+                        if (PSTRB[3]) begin
+                            config_reg[31:24] <= PWDATA[31:24];
+                        end
                     end
 
                     default: begin
                     end
                 endcase
+            end
+        end
+    end
+
+    //protection logic
+    always_comb begin
+        prot_error = 1'b0;
+
+        //for CONFIG register, we require secure + priviledge access
+        if (PADDR == CONFIG_ADDR) begin
+            
+            //must be priviledge
+            if (PPROT[0] == 1'b0) begin
+                prot_error = 1'b1;
+            end
+
+            //must be secure
+            if (PPROT[1] == 1'b1) begin
+                prot_error = 1'b1;
+            end
+        end
+    end
+
+
+    //PSLVERR Generation
+    always_comb begin
+        pslverr_next = 1'b0;
+
+        //error is valid only during transfer completion
+        if (PSEL && PENABLE && PREADY) begin
+            
+            //invalid address
+            case (PADDR) 
+                CTRL_ADDR,
+                STATUS_ADDR,
+                TXDATA_ADDR,
+                CONFIG_ADDR,
+                RXDATA_ADDR: begin
+                    pslverr_next = 1'b0;
+                end
+                default: begin
+                    pslverr_next = 1'b1;
+                end
+            endcase
+
+            //write to RO(READ ONLY) registers
+            if (PWRITE) begin
+                if (PADDR == STATUS_ADDR || PADDR == RXDATA_ADDR) begin
+                    pslverr_next = 1'b1;
+                end
+            end
+
+            //protection violation
+            if (prot_error) begin
+                pslverr_next = 1'b1;
             end
         end
     end
@@ -159,7 +261,6 @@ module apb4_slave #(
         end
     end
 
-    assign PSLVERR = 1'b0;
-
+    assign PSLVERR = pslverr_next;
 
 endmodule
