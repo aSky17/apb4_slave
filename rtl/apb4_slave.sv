@@ -263,4 +263,9 @@ module apb4_slave #(
 
     assign PSLVERR = pslverr_next;
 
+    //assertions
+    `ifdef ASSERTIONS
+        `include "apb4_assertions.sv"
+    `endif
+
 endmodule
