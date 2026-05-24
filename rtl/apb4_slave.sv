@@ -15,7 +15,7 @@ module apb4_slave #(
     input logic PENABLE,
     input logic PWRITE,
     input logic [DATA_WIDTH-1:0] PWDATA,
-    input logic [STRB_WIDTH-1:0] PSTRB;,
+    input logic [STRB_WIDTH-1:0] PSTRB,
     input logic [2:0] PPROT,
 
     output logic [DATA_WIDTH-1:0] PRDATA,
@@ -31,14 +31,16 @@ module apb4_slave #(
     apb_state_t state, next_state;
 
     //registers
-    logic [31:0] ctrl_reg;
-    logic [31:0] status_reg;
-    logic [31:0] txdata_reg;
-    logic [31:0] rxdata_reg;
-    logic [31:0] config_reg;
+    logic [ADDR_WIDTH:0] ctrl_reg;
+    logic [ADDR_WIDTH:0] status_reg;
+    logic [ADDR_WIDTH:0] txdata_reg;
+    logic [ADDR_WIDTH:0] rxdata_reg;
+    logic [ADDR_WIDTH:0] config_reg;
 
     //wait counter
-    logic [$clog2(WAIT_CYCLES+1)-1:0] wait_count;
+    // update: does not fail for WAIT_CYCLES = 0
+    localparam WAIT_W = (WAIT_CYCLES > 0) ? $clog2(WAIT_CYCLES+1) : 1;
+    logic [WAIT_W-1:0] wait_count;
 
     //internal error signal
     logic pslverr_next;
@@ -53,7 +55,7 @@ module apb4_slave #(
 
     assign setup_phase   = PSEL && !PENABLE;
     assign access_phase  = PSEL && PENABLE;
-    ssign transfer_done = PSEL && PENABLE && PREADY;
+    assign transfer_done = PSEL && PENABLE && PREADY;
 
     always_ff @(posedge PCLK or negedge PRESETn) begin
         if (!PRESETn) begin
@@ -110,13 +112,7 @@ module apb4_slave #(
     end
 
     //PREADY generation
-    always_comb begin
-        if (state == ACCESS && wait_count == 0) begin
-            PREADY = 1'b1;
-        end else begin
-            PREADY = 1'b0;
-        end
-    end
+    assign PREADY = (state == ACCESS) && (wait_count == 0);
 
     //address valid logic 
     function automatic logic is_valid_addr
@@ -227,7 +223,7 @@ module apb4_slave #(
 
     //read logic
     always_comb begin
-        PRDATA = 32'h00;
+        PRDATA = '0;
 
         if (access_phase && !PWRITE && PREADY) begin
             case (PADDR) 

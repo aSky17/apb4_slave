@@ -6,8 +6,8 @@ package apb4_pkg;
     typedef enum logic [1:0] {
         IDLE = 2'b00,
         SETUP = 2'b01,
-        ACCESS = 2'b0
-    } abp_state_t;
+        ACCESS = 2'b10
+    } apb_state_t;
 
     localparam logic [ADDR_WIDTH-1:0] CTRL_ADDR = 32'h0000_0000;
     localparam logic [ADDR_WIDTH-1:0] STATUS_ADDR = 32'h0000_0004;

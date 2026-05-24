@@ -5,6 +5,7 @@ property p_penable_requires_psel;
 
     //if PENABLE is 1, then PSEL should also be 1
     @(posedge PCLK)
+    disable iff (!PRESETn)
     PENABLE |-> PSEL; // |-> same cycle implication
 
 endproperty
@@ -15,7 +16,7 @@ assert property (p_penable_requires_psel)
 property p_setup_to_access;
 
     @(posedge PCLK)
-
+    disable iff (!PRESETn)
     (PSEL && !PENABLE)
     |=> PENABLE; // |=> next cycle implication
 
@@ -27,6 +28,7 @@ assert property (p_setup_to_access)
 property p_stable_wait;
 
     @(posedge PCLK)
+    disable iff (!PRESETn)
     (PSEL && PENABLE && !PREADY)
     |->
     (
@@ -44,6 +46,7 @@ assert property (p_stable_wait)
 property p_pslverr_valid;
 
     @(posedge PCLK)
+    disable iff (!PRESETn)
     PSLVERR |-> (PSEL && PENABLE && PREADY);
 
 endproperty
@@ -54,7 +57,8 @@ assert property (p_pslverr_valid)
 property p_access_requires_penable;
 
     @(posedge PCLK)
-    (state == ACCESS|)
+    disable iff (!PRESETn)
+    (state == ACCESS)
     |-> PENABLE;
 
 endproperty
@@ -65,6 +69,7 @@ assert property (p_access_requires_penable)
 property p_setup_penable_low;
 
     @(posedge PCLK)
+    disable iff (!PRESETn)
     (state == SETUP)
     |-> !PENABLE;
     
@@ -76,7 +81,8 @@ assert property (p_setup_penable_low)
 property p_pstrb_read_zero;
 
     @(posedge PCLK)
-    (!PWRITE && PSEL)
+    disable iff (!PRESETn)
+    (PSEL && PENABLE && !PWRITE)
     |-> (PSTRB == 4'b0000);
     
 endproperty
@@ -87,6 +93,7 @@ assert property (p_pstrb_read_zero)
 property p_transfer_complete;
 
     @(posedge PCLK)
+    disable iff (!PRESETn)
     (PSEL && PENABLE && PREADY)
     |-> ##1 (state == IDLE || state == SETUP);
 
@@ -99,7 +106,7 @@ assert property (p_transfer_complete)
 property p_pready_access_only;
 
     @(posedge PCLK)
-
+    disable iff (!PRESETn)
     PREADY |-> (state == ACCESS);
 
 endproperty
@@ -111,6 +118,7 @@ assert property (p_pready_access_only)
 property p_ro_write_error;
 
     @(posedge PCLK)
+    disable iff (!PRESETn)
     (
         PSEL &&
         PENABLE &&
