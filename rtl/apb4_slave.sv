@@ -6,7 +6,8 @@
 
 module apb4_slave #(
     parameter ADDR_WIDTH = 32,
-    parameter DATA_WIDTH = 32
+    parameter DATA_WIDTH = 32,
+    parameter STRB_WIDTH = 4
 ) (
     input logic PCLK,
     input logic PRESETn,
@@ -31,11 +32,11 @@ module apb4_slave #(
     apb_state_t state, next_state;
 
     //registers
-    logic [ADDR_WIDTH:0] ctrl_reg;
-    logic [ADDR_WIDTH:0] status_reg;
-    logic [ADDR_WIDTH:0] txdata_reg;
-    logic [ADDR_WIDTH:0] rxdata_reg;
-    logic [ADDR_WIDTH:0] config_reg;
+    logic [DATA_WIDTH:0] ctrl_reg;
+    logic [DATA_WIDTH:0] status_reg;
+    logic [DATA_WIDTH:0] txdata_reg;
+    logic [DATA_WIDTH:0] rxdata_reg;
+    logic [DATA_WIDTH:0] config_reg;
 
     //wait counter
     // update: does not fail for WAIT_CYCLES = 0

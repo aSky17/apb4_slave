@@ -2,6 +2,7 @@ package apb4_pkg;
 
     parameter ADDR_WIDTH = 32;
     parameter DATA_WIDTH = 32;
+    parameter STRB_WIDTH = 4;
 
     typedef enum logic [1:0] {
         IDLE = 2'b00,
@@ -14,6 +15,5 @@ package apb4_pkg;
     localparam logic [ADDR_WIDTH-1:0] TXDATA_ADDR = 32'h0000_0008;
     localparam logic [ADDR_WIDTH-1:0] RXDATA_ADDR = 32'h0000_000C;
     localparam logic [ADDR_WIDTH-1:0] CONFIG_ADDR = 32'h0000_0010;
-    localparam int STRB_WIDTH = DATA_WIDTH/8;
 
 endpackage

@@ -1,0 +1,41 @@
+# Questa/ModelSim libraries
+work/
+transcript
+modelsim.ini
+
+# Simulation outputs
+*.wlf
+*.log
+*.jou
+*.pb
+*.vstf
+
+# Waveforms
+*.vcd
+*.vpd
+*.fsdb
+
+# Coverage
+covhtmlreport/
+coverage/
+*.ucdb
+
+# Temporary files
+*.tmp
+*.bak
+
+# Linux/WSL
+*~
+
+# VSCode
+.vscode/
+
+# Python cache
+__pycache__/
+
+# Simulation directory generated files
+sim/work/
+sim/transcript
+sim/*.wlf
+sim/*.log
+sim/modelsim.ini
