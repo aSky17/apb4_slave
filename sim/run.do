@@ -2,6 +2,7 @@ vlib work
 vmap work work
 
 # RTL
+vlog ../rtl/top.sv
 vlog ../rtl/apb4_pkg.sv
 vlog ../rtl/apb4_slave.sv
 
@@ -10,6 +11,7 @@ vlog ../tb/interface/apb_if.sv
 
 # TB Package
 vlog +incdir+../tb/sequence_item \
+     +incdir+../tb/sequences \
      +incdir+../tb/sequencer \
      +incdir+../tb/driver \
      +incdir+../tb/monitor \
@@ -20,3 +22,13 @@ vlog +incdir+../tb/sequence_item \
 
 # Top
 vlog ../tb/top/top_tb.sv
+
+# Simulate
+vsim top_tb +UVM_TESTNAME=apb_raw_war_test +UVM_VERBOSITY=UVM_DEBUG -voptargs=+acc
+
+# Waves
+add wave sim:/top_tb/apb_vif/*
+add wave sim:/top_tb/dut/*
+
+# Run
+run -all

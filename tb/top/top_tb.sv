@@ -47,6 +47,6 @@ module top_tb;
             apb_vif
         );
 
-        run_test("apb_base_test");
+        run_test();
     end
 endmodule
