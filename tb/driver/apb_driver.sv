@@ -34,14 +34,13 @@ class apb_driver extends uvm_driver #(apb_seq_item);
         //SETUP phase
         @(posedge vif.PCLK);
 
-        vif.PSEL <= 1'b1;
+        vif.PSEL    <= 1'b1;
         vif.PENABLE <= 1'b0;
-
-        vif.PADDR <= tr.addr;
-        vif.PWRITE <= tr.write;
-        vif.PWDATA <= tr.wdata;
-        vif.PSTRB <= tr.strb;
-        vif.PPROT <= tr.prot;
+        vif.PADDR   <= tr.addr;
+        vif.PWRITE  <= tr.write;
+        vif.PWDATA  <= tr.wdata;
+        vif.PSTRB   <= tr.strb;
+        vif.PPROT   <= tr.prot;
 
         //ACCESS phase
         @(posedge vif.PCLK);
@@ -50,7 +49,7 @@ class apb_driver extends uvm_driver #(apb_seq_item);
 
         while(vif.PREADY == 0) begin
             @(posedge vif.PCLK);
-        end 
+        end
 
         //read data
         if(!tr.write) begin
@@ -59,10 +58,45 @@ class apb_driver extends uvm_driver #(apb_seq_item);
 
         tr.slverr = vif.PSLVERR;
 
-        //Complete transfer
-        @(posedge vif.PCLK);
-        vif.PSEL <= 1'b0;
-        vif.PENABLE <= 1'b0;
+        //Complete transfer — check for back-to-back
+        seq_item_port.item_done();          // release current item first
+
+        seq_item_port.try_next_item(req);   // non-blocking: gets next item if ready
+
+        if(req != null) begin
+            // Back-to-back: stay in SETUP, keep PSEL high, drop PENABLE
+            @(posedge vif.PCLK);
+            vif.PENABLE <= 1'b0;
+            vif.PADDR   <= req.addr;
+            vif.PWRITE  <= req.write;
+            vif.PWDATA  <= req.wdata;
+            vif.PSTRB   <= req.strb;
+            vif.PPROT   <= req.prot;
+
+            // drive the next transfer recursively
+            // ACCESS phase for the new item
+            @(posedge vif.PCLK);
+            vif.PENABLE <= 1'b1;
+
+            while(vif.PREADY == 0) begin
+                @(posedge vif.PCLK);
+            end
+
+            if(!req.write) begin
+                req.rdata = vif.PRDATA;
+            end
+
+            req.slverr = vif.PSLVERR;
+
+            seq_item_port.item_done();      // release the b2b item
+
+        end
+        else begin
+            // No next item — go to IDLE
+            @(posedge vif.PCLK);
+            vif.PSEL    <= 1'b0;
+            vif.PENABLE <= 1'b0;
+        end
 
     endtask
 

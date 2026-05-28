@@ -18,7 +18,7 @@ class apb_raw_war_test extends apb_base_test;
         rd_seq = apb_multiple_read_seq::type_id::create("rd_seq");
 
         //WAW
-        wr_seq.start(env.agent.seqr);
+        wr_seq.start(env.agent.seqr); //uvm internally calls bdoy()
 
         //RAW
         rd_seq.start(env.agent.seqr);
