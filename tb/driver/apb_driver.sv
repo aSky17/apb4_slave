@@ -19,6 +19,12 @@ class apb_driver extends uvm_driver #(apb_seq_item);
 
     task run_phase(uvm_phase phase);
 
+        // 1. Wait for active-low reset to be de-asserted
+        wait(vif.PRESETn === 1'b1);
+        
+        // 2. Wait an extra clock cycle just to be safe before driving
+        @(posedge vif.PCLK);
+        
         forever begin
             seq_item_port.get_next_item(req);
 

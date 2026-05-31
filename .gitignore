@@ -17,7 +17,6 @@ modelsim.ini
 
 # Coverage
 covhtmlreport/
-coverage/
 *.ucdb
 
 # Temporary files
