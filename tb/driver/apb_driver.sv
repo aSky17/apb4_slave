@@ -42,61 +42,19 @@ class apb_driver extends uvm_driver #(apb_seq_item);
         vif.PSTRB   <= tr.strb;
         vif.PPROT   <= tr.prot;
 
-        //ACCESS phase
+        // ACCESS phase
         @(posedge vif.PCLK);
-
         vif.PENABLE <= 1'b1;
 
-        while(vif.PREADY == 0) begin
-            @(posedge vif.PCLK);
-        end
+        while(vif.PREADY == 0) @(posedge vif.PCLK);
 
-        //read data
-        if(!tr.write) begin
-            tr.rdata = vif.PRDATA;
-        end
-
+        if(!tr.write) tr.rdata = vif.PRDATA;
         tr.slverr = vif.PSLVERR;
 
-        //Complete transfer — check for back-to-back
-        seq_item_port.item_done();          // release current item first
-
-        seq_item_port.try_next_item(req);   // non-blocking: gets next item if ready
-
-        if(req != null) begin
-            // Back-to-back: stay in SETUP, keep PSEL high, drop PENABLE
-            @(posedge vif.PCLK);
-            vif.PENABLE <= 1'b0;
-            vif.PADDR   <= req.addr;
-            vif.PWRITE  <= req.write;
-            vif.PWDATA  <= req.wdata;
-            vif.PSTRB   <= req.strb;
-            vif.PPROT   <= req.prot;
-
-            // drive the next transfer recursively
-            // ACCESS phase for the new item
-            @(posedge vif.PCLK);
-            vif.PENABLE <= 1'b1;
-
-            while(vif.PREADY == 0) begin
-                @(posedge vif.PCLK);
-            end
-
-            if(!req.write) begin
-                req.rdata = vif.PRDATA;
-            end
-
-            req.slverr = vif.PSLVERR;
-
-            seq_item_port.item_done();      // release the b2b item
-
-        end
-        else begin
-            // No next item — go to IDLE
-            @(posedge vif.PCLK);
-            vif.PSEL    <= 1'b0;
-            vif.PENABLE <= 1'b0;
-        end
+        // IDLE — item_done called by run_phase after this returns
+        @(posedge vif.PCLK);
+        vif.PSEL    <= 1'b0;
+        vif.PENABLE <= 1'b0;
 
     endtask
 

@@ -14,6 +14,8 @@ vlog +incdir+../tb/sequence_item \
      +incdir+../tb/sequencer \
      +incdir+../tb/driver \
      +incdir+../tb/monitor \
+     +incdir+../tb/scoreboard \
+     +incdir+../tb/coverage \
      +incdir+../tb/agent \
      +incdir+../tb/env \
      +incdir+../tb/tests \
@@ -23,7 +25,7 @@ vlog +incdir+../tb/sequence_item \
 vlog ../tb/top/top_tb.sv
 
 # Simulate
-vsim top_tb +UVM_TESTNAME=apb_smoke_test +UVM_VERBOSITY=UVM_DEBUG -voptargs=+acc
+vsim top_tb +UVM_TESTNAME=apb_pstrb_test +UVM_VERBOSITY=UVM_DEBUG -voptargs=+acc
 
 # Waves
 add wave sim:/top_tb/apb_vif/*

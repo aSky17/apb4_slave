@@ -7,17 +7,6 @@ package apb_tb_pkg;
     // sequence item
     `include "apb_seq_item.sv"
 
-    // sequencer
-    `include "apb_sequencer.sv"
-
-    // driver/monitor
-    `include "apb_driver.sv"
-    `include "apb_monitor.sv"
-
-    // agent/env
-    `include "apb_agent.sv"
-    `include "apb_env.sv"
-
     // sequences
     `include "apb_base_seq.sv"
     `include "apb_single_write_seq.sv"
@@ -26,6 +15,22 @@ package apb_tb_pkg;
     `include "apb_multiple_read_seq.sv"
     `include "apb_wait_seq.sv"
     `include "apb_b2b_seq.sv"
+    `include "apb_pstrb_seq.sv"
+    `include "apb_data_seq.sv"
+
+    // sequencer
+    `include "apb_sequencer.sv"
+
+    // driver/monitor
+    `include "apb_driver.sv"
+    `include "apb_monitor.sv"
+    `include "apb_scoreboard.sv"
+    `include "apb_coverage.sv"
+
+
+    // agent/env
+    `include "apb_agent.sv"
+    `include "apb_env.sv"
 
     // base test
     `include "apb_base_test.sv"
@@ -35,6 +40,8 @@ package apb_tb_pkg;
     `include "apb_raw_war_test.sv"
     `include "apb_wait_test.sv"
     `include "apb_b2b_test.sv"
+    `include "apb_pstrb_test.sv"
+    `include "apb_data_test.sv"
 
 
 endpackage
