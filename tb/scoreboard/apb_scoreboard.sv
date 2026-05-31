@@ -88,5 +88,18 @@ class apb_scoreboard extends uvm_scoreboard;
             end
         end
 
+        if(tr.exp_slverr != tr.slverr) begin
+
+            `uvm_error(
+                "SCOREBOARD",
+                $sformatf(
+                    "PSLVERR mismatch expected=%0d actual=%0d",
+                    tr.exp_slverr,
+                    tr.slverr
+                )
+            );
+
+        end
+
     endfunction
 endclass

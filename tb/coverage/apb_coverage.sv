@@ -51,9 +51,18 @@ class apb_coverage extends uvm_subscriber #(apb_seq_item);
             };
         }
 
+        //error coverage
+        ERROR_CP : coverpoint tr.slverr {
+
+            bins no_error = {0};
+            bins error    = {1};
+
+        }
+
         //cross coverage 
         ADDR_X_WRITE: cross ADDR_CP, WRITE_CP;
         PSTRB_X_WRITE: cross PSTRB_CP, WRITE_CP;
+        ERROR_X_ADDR : cross ERROR_CP, ADDR_CP;
 
     endgroup
 

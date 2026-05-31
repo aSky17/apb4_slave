@@ -8,6 +8,7 @@ class apb_seq_item extends uvm_sequence_item;
     rand bit [3:0] strb;
     rand bit [2:0] prot;
     bit slverr;
+    bit exp_slverr; //for error testing, it means i expect an error
 
     `uvm_object_utils_begin(apb_seq_item)
 

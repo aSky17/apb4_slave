@@ -17,6 +17,10 @@ package apb_tb_pkg;
     `include "apb_b2b_seq.sv"
     `include "apb_pstrb_seq.sv"
     `include "apb_data_seq.sv"
+    `include "apb_invalid_addr_seq.sv"
+    `include "apb_ro_write_seq.sv"
+    `include "apb_prot_error_seq.sv"
+    
 
     // sequencer
     `include "apb_sequencer.sv"
@@ -42,6 +46,6 @@ package apb_tb_pkg;
     `include "apb_b2b_test.sv"
     `include "apb_pstrb_test.sv"
     `include "apb_data_test.sv"
-
+    `include "apb_error_test.sv"
 
 endpackage
