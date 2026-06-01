@@ -1,2 +1,0 @@
-var g_data = {"data":[{"n":"work.apb4_slave","id":5,"zf":1,"tc":84.81,"s":94.00,"b":91.22,"fc":92.85,"fe":100.00,"fs":100.00,"ft":60.00,"t":55.61},{"n":"work.apb_if","id":1,"zf":1,"tc":85.00,"t":85.00},{"n":"work.apb_tb_pkg","id":3,"zf":1,"tc":36.05,"s":54.12,"b":10.02,"fc":11.84,"g":68.20},{"n":"work.top_tb","id":4,"zf":1,"tc":100.00,"s":100.00,"t":100.00}]};
-processDuData(g_data);
