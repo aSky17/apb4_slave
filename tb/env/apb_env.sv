@@ -16,6 +16,11 @@ class apb_env extends uvm_env;
         agent = apb_agent::type_id::create("agent", this);
         sb = apb_scoreboard::type_id::create("sb", this);
         cov = apb_coverage::type_id::create("cov", this);
+
+        `uvm_info("ENV",
+              "Coverage component created",
+              UVM_LOW)
+              
     endfunction
 
     //on connect phase for components to communicate

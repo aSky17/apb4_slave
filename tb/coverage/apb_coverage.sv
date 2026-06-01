@@ -53,16 +53,21 @@ class apb_coverage extends uvm_subscriber #(apb_seq_item);
 
         //error coverage
         ERROR_CP : coverpoint tr.slverr {
-
             bins no_error = {0};
             bins error    = {1};
+        }
 
+        //PROT coverage
+        PROT_CP: coverpoint tr.prot {
+            bins all_vals[] = {[0:7]};
         }
 
         //cross coverage 
         ADDR_X_WRITE: cross ADDR_CP, WRITE_CP;
         PSTRB_X_WRITE: cross PSTRB_CP, WRITE_CP;
         ERROR_X_ADDR : cross ERROR_CP, ADDR_CP;
+        PROT_X_ADDR: cross PROT_CP, ADDR_CP;
+        PROT_X_ERROR: cross PROT_CP, ERROR_CP;
 
     endgroup
 
@@ -75,6 +80,13 @@ class apb_coverage extends uvm_subscriber #(apb_seq_item);
     //to automatically call it  from monitor
     function void write(apb_seq_item t);
         tr = t;
+
+        `uvm_info("COVERAGE",
+              $sformatf("Sampling addr=%h write=%0d",
+                        tr.addr,
+                        tr.write),
+              UVM_LOW)
+              
         apb_cov.sample();
     endfunction
 endclass

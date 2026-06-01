@@ -42,6 +42,40 @@ class apb_monitor extends uvm_monitor;
                 tr.prot   = vif.PPROT;
                 tr.slverr = vif.PSLVERR;
 
+                tr.exp_slverr = 0;
+                // Predict expected PSLVERR
+                // invalid address
+                if(!(tr.addr inside {
+                        CTRL_ADDR,
+                        STATUS_ADDR,
+                        TXDATA_ADDR,
+                        RXDATA_ADDR,
+                        CONFIG_ADDR
+                    }))
+                begin
+                    tr.exp_slverr = 1;
+                end
+
+                // STATUS register is RO
+                else if(tr.addr == STATUS_ADDR && tr.write)
+                begin
+                    tr.exp_slverr = 1;
+                end
+
+                // CONFIG register protection
+                else if(tr.addr == CONFIG_ADDR)
+                begin
+
+                    // must be privileged
+                    if(tr.prot[0] == 1'b0)
+                        tr.exp_slverr = 1;
+
+                    // must be secure
+                    if(tr.prot[1] == 1'b1)
+                        tr.exp_slverr = 1;
+
+                end
+
                 //broadcast transction
                 mon_ap.write(tr);
             end

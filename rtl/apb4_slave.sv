@@ -1,8 +1,4 @@
-/*
-* PPROT[0]: 1 = privileged, 0 = user
-* PPROT[1]: 1 = non-secure, 0 = secure
-* PPROT[2]: 1 = instruction access, 0 = data access
-*/
+
 
 module apb4_slave #(
     parameter ADDR_WIDTH = 32,
@@ -177,6 +173,27 @@ module apb4_slave #(
         end
     end
 
+
+    // PPROT Encoding Used:
+    // PPROT[0] = 0 : User Access
+    // PPROT[0] = 1 : Privileged Access
+    //
+    // PPROT[1] = 0 : Secure Access
+    // PPROT[1] = 1 : Non-Secure Access
+    //
+    // PPROT[2] = 0 : Data Access
+    // PPROT[2] = 1 : Instruction Access
+    //
+    // CONFIG_ADDR Protection Policy:
+    //     Requires Privileged + Secure Access
+    //     Legal  : PPROT[1:0] = 2'b01
+    //     Illegal: All other combinations
+    //
+    // Examples:
+    //     3'b001 -> Privileged + Secure      (Allowed)
+    //     3'b000 -> User + Secure            (PSLVERR)
+    //     3'b011 -> Privileged + Non-Secure  (PSLVERR)
+    //     3'b010 -> User + Non-Secure        (PSLVERR)
     //protection logic
     always_comb begin
         prot_error = 1'b0;

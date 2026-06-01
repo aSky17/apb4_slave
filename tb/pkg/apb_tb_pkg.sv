@@ -20,7 +20,10 @@ package apb_tb_pkg;
     `include "apb_invalid_addr_seq.sv"
     `include "apb_ro_write_seq.sv"
     `include "apb_prot_error_seq.sv"
-    
+    `include "apb_secure_access_seq.sv"
+    `include "apb_user_access_seq.sv"
+    `include "apb_nonsecure_access_seq.sv"
+    `include "apb_pprot_seq.sv"
 
     // sequencer
     `include "apb_sequencer.sv"
@@ -47,5 +50,6 @@ package apb_tb_pkg;
     `include "apb_pstrb_test.sv"
     `include "apb_data_test.sv"
     `include "apb_error_test.sv"
-
+    `include "apb_pprot_test.sv"
+    
 endpackage

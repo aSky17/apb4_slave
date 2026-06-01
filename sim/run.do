@@ -2,14 +2,14 @@ vlib work
 vmap work work
 
 # RTL
-vlog ../rtl/apb4_pkg.sv
-vlog ../rtl/apb4_slave.sv
+vlog -cover bcestf ../rtl/apb4_pkg.sv
+vlog -cover bcestf ../rtl/apb4_slave.sv
 
 # Interface
-vlog ../tb/interface/apb_if.sv
+vlog -cover bcestf ../tb/interface/apb_if.sv
 
 # TB Package
-vlog +incdir+../tb/sequence_item \
+vlog -cover bcestf +incdir+../tb/sequence_item \
      +incdir+../tb/sequences \
      +incdir+../tb/sequencer \
      +incdir+../tb/driver \
@@ -22,10 +22,10 @@ vlog +incdir+../tb/sequence_item \
      ../tb/pkg/apb_tb_pkg.sv
 
 # Top
-vlog ../tb/top/top_tb.sv
+vlog -cover bcestf ../tb/top/top_tb.sv
 
 # Simulate
-vsim top_tb +UVM_TESTNAME=apb_pstrb_test +UVM_VERBOSITY=UVM_DEBUG -voptargs=+acc
+vsim -coverage top_tb +UVM_TESTNAME=apb_smoke_test +UVM_VERBOSITY=UVM_DEBUG -voptargs="+acc +cover=bcesft" -onfinish stop
 
 # Waves
 add wave sim:/top_tb/apb_vif/*
@@ -33,3 +33,5 @@ add wave sim:/top_tb/dut/*
 
 # Run
 run -all
+coverage save smoke.ucdb
+quit -f

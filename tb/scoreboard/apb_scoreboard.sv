@@ -69,7 +69,7 @@ class apb_scoreboard extends uvm_scoreboard;
                 expected = 32'h0;
             end
 
-            if (!expected == tr.rdata) begin
+            if (expected != tr.rdata) begin
                 `uvm_error("SCOREBOARD",
                            $sformatf(
                              "READ MISMATCH addr=%h expected=%h actual=%h",
