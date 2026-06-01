@@ -25,7 +25,7 @@ vlog -cover bcestf +incdir+../tb/sequence_item \
 vlog -cover bcestf ../tb/top/top_tb.sv
 
 # Simulate
-vsim -coverage top_tb +UVM_TESTNAME=apb_smoke_test +UVM_VERBOSITY=UVM_DEBUG -voptargs="+acc +cover=bcesft" -onfinish stop
+vsim -coverage top_tb +UVM_TESTNAME=apb_reset_test +UVM_VERBOSITY=UVM_DEBUG -voptargs="+acc +cover=bcesft" -onfinish stop
 
 # Waves
 add wave sim:/top_tb/apb_vif/*
@@ -33,5 +33,5 @@ add wave sim:/top_tb/dut/*
 
 # Run
 run -all
-coverage save smoke.ucdb
+#coverage save smoke.ucdb
 quit -f

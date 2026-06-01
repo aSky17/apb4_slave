@@ -41,6 +41,8 @@ class apb_monitor extends uvm_monitor;
                 tr.strb   = vif.PSTRB;
                 tr.prot   = vif.PPROT;
                 tr.slverr = vif.PSLVERR;
+                tr.reset_seen = !vif.PRESETn;
+
 
                 tr.exp_slverr = 0;
                 // Predict expected PSLVERR

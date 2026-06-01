@@ -132,3 +132,81 @@ endproperty
 
 assert property (p_ro_write_error)
     else $error("APB ERROR: RO write did not generate PSLVERR");
+
+// assertion 11: FSM returns to IDLE after reset
+property p_reset_to_idle;
+
+    @(posedge PCLK)
+    !PRESETn |=> (state == IDLE);
+
+endproperty
+
+assert property(p_reset_to_idle)
+    else $error("RESET ERROR: FSM failed to return to IDLE");
+
+// assertion 12: CTRL register clears on reset
+property p_ctrl_reg_reset;
+
+    @(posedge PCLK)
+    !PRESETn |=> (ctrl_reg == 32'h0);
+
+endproperty
+
+assert property(p_ctrl_reg_reset)
+    else $error("RESET ERROR: CTRL register not reset");
+
+// assertion 13: STATUS register clears on reset
+property p_status_reg_reset;
+
+    @(posedge PCLK)
+    !PRESETn |=> (status_reg == 32'h0);
+
+endproperty
+
+assert property(p_status_reg_reset)
+    else $error("RESET ERROR: STATUS register not reset");
+
+// assertion 14: TXDATA register clears on reset
+property p_txdata_reg_reset;
+
+    @(posedge PCLK)
+    !PRESETn |=> (txdata_reg == 32'h0);
+
+endproperty
+
+assert property(p_txdata_reg_reset)
+    else $error("RESET ERROR: TXDATA register not reset");
+
+// assertion 15: RXDATA register clears on reset
+property p_rxdata_reg_reset;
+
+    @(posedge PCLK)
+    !PRESETn |=> (rxdata_reg == 32'h0);
+
+endproperty
+
+assert property(p_rxdata_reg_reset)
+    else $error("RESET ERROR: RXDATA register not reset");
+
+// assertion 16: CONFIG register clears on reset
+property p_config_reg_reset;
+
+    @(posedge PCLK)
+    !PRESETn |=> (config_reg == 32'h0);
+
+endproperty
+
+assert property(p_config_reg_reset)
+    else $error("RESET ERROR: CONFIG register not reset");
+
+// assertion 17: no active transfer during reset
+property p_no_transfer_during_reset;
+
+    @(posedge PCLK)
+    !PRESETn |-> (!PSEL && !PENABLE);
+
+endproperty
+
+assert property(p_no_transfer_during_reset)
+    else $error("RESET ERROR: Transfer active during reset");
+

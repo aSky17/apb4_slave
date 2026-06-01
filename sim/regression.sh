@@ -10,6 +10,8 @@ TESTS=(
     "apb_pstrb_test"
     "apb_raw_war_test"
     "apb_wait_test"
+    "apb_reset_test"
+    "apb_reset_recovery_test"
 )
 
 # Clean up old coverage databases before starting

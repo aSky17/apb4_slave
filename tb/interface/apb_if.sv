@@ -13,4 +13,14 @@ interface apb_if(input logic PCLK);
     logic PREADY;
     logic PSLVERR;
 
+    task reset_dut();
+
+        PRESETn <= 0;
+
+        repeat(5) @(posedge PCLK);
+
+        PRESETn <= 1;
+
+    endtask
+
 endinterface //apb_if

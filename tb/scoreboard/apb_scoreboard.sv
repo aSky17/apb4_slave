@@ -101,5 +101,18 @@ class apb_scoreboard extends uvm_scoreboard;
 
         end
 
+        if(tr.reset_seen) begin
+            reset_model();
+            `uvm_info("SB",
+                    "Mirror model reset",
+                    UVM_LOW)
+
+            return;
+        end
+
+    endfunction
+
+    virtual function reset_model();
+        mirror_mem.delete();
     endfunction
 endclass

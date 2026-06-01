@@ -24,6 +24,8 @@ package apb_tb_pkg;
     `include "apb_user_access_seq.sv"
     `include "apb_nonsecure_access_seq.sv"
     `include "apb_pprot_seq.sv"
+    `include "apb_reset_seq.sv"
+    `include "apb_reset_mid_transfer_seq.sv"
 
     // sequencer
     `include "apb_sequencer.sv"
@@ -51,5 +53,7 @@ package apb_tb_pkg;
     `include "apb_data_test.sv"
     `include "apb_error_test.sv"
     `include "apb_pprot_test.sv"
-    
+    `include "apb_reset_test.sv"
+    `include "apb_reset_recovery_test.sv"
+
 endpackage

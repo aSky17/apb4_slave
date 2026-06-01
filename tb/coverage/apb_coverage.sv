@@ -62,6 +62,11 @@ class apb_coverage extends uvm_subscriber #(apb_seq_item);
             bins all_vals[] = {[0:7]};
         }
 
+        //reset coverage
+        RESET_CP : coverpoint tr.reset_seen {
+            bins reset_seen = {1};
+        }
+
         //cross coverage 
         ADDR_X_WRITE: cross ADDR_CP, WRITE_CP;
         PSTRB_X_WRITE: cross PSTRB_CP, WRITE_CP;
@@ -70,7 +75,7 @@ class apb_coverage extends uvm_subscriber #(apb_seq_item);
         PROT_X_ERROR: cross PROT_CP, ERROR_CP;
 
     endgroup
-
+    
     function new(string name, uvm_component parent);
         super.new(name, parent);
 
@@ -86,7 +91,7 @@ class apb_coverage extends uvm_subscriber #(apb_seq_item);
                         tr.addr,
                         tr.write),
               UVM_LOW)
-              
+
         apb_cov.sample();
     endfunction
 endclass
