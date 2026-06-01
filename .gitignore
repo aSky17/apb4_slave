@@ -38,3 +38,4 @@ sim/transcript
 sim/*.wlf
 sim/*.log
 sim/modelsim.ini
+sim/regression_report

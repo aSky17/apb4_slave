@@ -24,7 +24,6 @@ for TEST in "${TESTS[@]}"; do
     echo " Running UVM Test: $TEST"
     echo "========================================"
     
-    # FIX 1: Added '-onfinish stop' to prevent UVM from killing the save command
     vsim.exe -c -coverage top_tb \
          +UVM_TESTNAME=$TEST \
          +UVM_VERBOSITY=UVM_LOW \
@@ -42,7 +41,6 @@ vcover.exe merge master_regression.ucdb *.ucdb
 
 echo " Generating HTML Report..."
 
-# FIX 2: Changed '-htmldir' to '-output' to fix the Questa deprecation warning
 vcover.exe report -html -output regression_report master_regression.ucdb
 
 echo "Done! Open regression_report/index.html to view combined coverage."
